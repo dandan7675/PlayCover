@@ -15,9 +15,13 @@ extension PlayApp {
 
             try? FileManager.default.createDirectory(at: appTmp, withIntermediateDirectories: false)
 
-            appTmp.enumerateContents { url, type in
-                if url.lastPathComponent.contains("discord-ipc-") && (type.isSymbolicLink ?? true) {
-                    FileManager.default.delete(at: url)
+            appTmp.enumerateContents { url, _ in
+                if url.lastPathComponent.range(of: "discord-ipc-[0-9]", options: .regularExpression) != nil {
+                    do {
+                        try FileManager.default.removeItem(at: url)
+                    } catch {
+                        print("failed to remove discord ipc: \(error)")
+                    }
                 }
             }
 
@@ -65,15 +69,4 @@ extension PlayApp {
     func removeAlias() {
         FileManager.default.delete(at: aliasURL)
     }
-
-    var hasMacVersion: Bool {
-        PlayApp.MACOS_APPS.contains(info.bundleIdentifier)
-    }
-
-    static let MACOS_APPS = [
-        "com.innersloth.amongus",
-        "com.devsisters.ck",
-        "com.miHoYo.bh3global"
-    ]
-
 }
